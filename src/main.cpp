@@ -1,14 +1,14 @@
 #include <iostream>
-#include "Account.h"
+#include "FinanceManager.h"
 
 int main() {
-    Account checking("Checking Account", 1000.00);
+    FinanceManager fm;
 
-    checking.addTransaction(-50.25, "Food", "Groceries");
-    checking.addTransaction(500.00, "Income", "Paycheck");
-    checking.addTransaction(-75.00, "Bills", "Electric bill");
+    fm.addAccount("Checking", 1000.00);
+    fm.addAccount("Savings", 2500.00);
+    fm.addAccount("Emergency Fund", 500.00);
 
-    checking.printTransactions();
+    fm.printAccountSummary();
 
     return 0;
 }

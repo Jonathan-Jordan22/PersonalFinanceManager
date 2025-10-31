@@ -29,3 +29,8 @@ void Account::printTransactions() const {
     std::cout << "-----------------------------------------" << std::endl;
     std::cout << "Current Balance: $" << std::fixed << std::setprecision(2) << balance << std::endl;
 }
+
+std::string Account::getName() const {
+    return name;
+}
+

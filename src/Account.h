@@ -17,4 +17,5 @@ public:
     void addTransaction(double amount, const std::string& category, const std::string& description);
     double getBalance() const;
     void printTransactions() const;
+    std::string getName() const;
 };
