@@ -2,7 +2,8 @@
 #include <string>
 #include <ctime>
 
-class Transaction {
+class Transaction
+{
 private:
     double amount;
     std::string category;
@@ -11,11 +12,12 @@ private:
 
 public:
     // Constructor
-    Transaction(double amount, const std::string& category, const std::string& description);
+    Transaction(double amount, const std::string &category, const std::string &description);
 
     // Getters
     double getAmount() const;
     std::string getCategory() const;
     std::string getDescription() const;
     std::string getDateString() const;
+    std::time_t getDate() const;
 };

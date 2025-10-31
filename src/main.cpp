@@ -1,6 +1,7 @@
 #include <iostream>
 #include <limits>
 #include <iomanip>
+#include <algorithm>
 #include "FinanceManager.h"
 
 // Function to get a valid double (for balances, amounts)
@@ -125,7 +126,6 @@ int main()
             if (fm.getAccounts().empty())
             {
                 std::cout << "No accounts exist. Add an account first.\n";
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 std::cout << "Press Enter to return to the main menu...";
                 std::cin.get();
                 continue;
@@ -135,33 +135,88 @@ int main()
             int accountIndex = getValidatedInt("Select account number to view transactions: ", 1, fm.getAccounts().size());
             Account &selectedAccount = fm.getAccounts()[accountIndex - 1];
 
-            std::cout << "\n=== Transactions for " << selectedAccount.getName() << " ===\n";
-            const auto &transactions = selectedAccount.getTransactions();
+            std::vector<Transaction> filteredTransactions = selectedAccount.getTransactions(); // copy
 
-            if (transactions.empty())
+            while (true)
             {
-                std::cout << "No transactions yet.\n";
-            }
-            else
-            {
-                std::cout << std::left << std::setw(10) << "Amount"
-                          << std::setw(15) << "Category"
-                          << std::setw(25) << "Description"
-                          << "Date\n";
-                std::cout << "---------------------------------------------------------------\n";
+                std::cout << "\n=== Transaction Options for " << selectedAccount.getName() << " ===\n";
+                std::cout << "1. View all transactions\n";
+                std::cout << "2. Filter by category\n";
+                std::cout << "3. Sort by amount\n";
+                std::cout << "4. Sort by date\n";
+                std::cout << "5. Return to main menu\n";
 
-                for (const auto &t : transactions)
-                {
-                    std::cout << std::left << std::setw(10) << t.getAmount()
-                              << std::setw(15) << t.getCategory()
-                              << std::setw(25) << t.getDescription()
-                              << t.getDateString() << "\n";
+                int option = getValidatedInt("Choose an option: ", 1, 5);
+
+                if (option == 5)
+                    break; // back to main menu
+
+                filteredTransactions = selectedAccount.getTransactions(); // reset before each filter/sort
+
+                if (option == 2)
+                { // filter by category
+                    std::string category;
+                    std::cout << "Enter category to filter by: ";
+                    std::getline(std::cin, category);
+
+                    std::vector<Transaction> categoryFiltered;
+                    for (const auto &t : filteredTransactions)
+                    {
+                        if (t.getCategory() == category)
+                        {
+                            categoryFiltered.push_back(t);
+                        }
+                    }
+                    filteredTransactions = categoryFiltered;
                 }
-            }
+                else if (option == 3)
+                { // sort by amount
+                    std::cout << "Sort by amount: 1. Ascending 2. Descending: ";
+                    int sortChoice = getValidatedInt("", 1, 2);
+                    std::sort(filteredTransactions.begin(), filteredTransactions.end(),
+                              [sortChoice](const Transaction &a, const Transaction &b)
+                              {
+                                  return sortChoice == 1 ? a.getAmount() < b.getAmount() : a.getAmount() > b.getAmount();
+                              });
+                }
+                else if (option == 4)
+                { // sort by date
+                    std::cout << "Sort by date: 1. Oldest first 2. Newest first: ";
+                    int sortChoice = getValidatedInt("", 1, 2);
+                    std::sort(filteredTransactions.begin(), filteredTransactions.end(),
+                              [sortChoice](const Transaction &a, const Transaction &b)
+                              {
+                                  return sortChoice == 1 ? a.getDate() < b.getDate() : a.getDate() > b.getDate();
+                              });
+                }
 
-            // Pause before returning to menu
-            std::cout << "\nPress Enter to return to the main menu...";
-            std::cin.get();
+                // Display transactions
+                if (filteredTransactions.empty())
+                {
+                    std::cout << "No transactions found.\n";
+                }
+                else
+                {
+                    std::cout << "\n"
+                              << std::left << std::setw(10) << "Amount"
+                              << std::setw(15) << "Category"
+                              << std::setw(25) << "Description"
+                              << "Date\n";
+                    std::cout << "---------------------------------------------------------------\n";
+
+                    for (const auto &t : filteredTransactions)
+                    {
+                        std::cout << std::left << std::setw(10) << t.getAmount()
+                                  << std::setw(15) << t.getCategory()
+                                  << std::setw(25) << t.getDescription()
+                                  << t.getDateString() << "\n";
+                    }
+                }
+
+                // Pause before showing sub-menu again
+                std::cout << "\nPress Enter to continue...";
+                std::cin.get();
+            }
         }
         else if (choice == 5)
         {
