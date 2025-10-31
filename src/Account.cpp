@@ -34,3 +34,6 @@ std::string Account::getName() const {
     return name;
 }
 
+const std::vector<Transaction>& Account::getTransactions() const {
+    return transactions;
+}

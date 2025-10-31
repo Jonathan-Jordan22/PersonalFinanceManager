@@ -18,4 +18,5 @@ public:
     double getBalance() const;
     void printTransactions() const;
     std::string getName() const;
+    const std::vector<Transaction>& getTransactions() const;
 };

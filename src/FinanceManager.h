@@ -16,4 +16,11 @@ public:
 
     // Get total net worth (sum of balances)
     double getTotalBalance() const;
+
+    std::vector<Account>& getAccounts();
+
+    void listAccounts() const;
+
+    void saveToFile(const std::string& filename) const;
+    void loadFromFile(const std::string& filename);
 };
