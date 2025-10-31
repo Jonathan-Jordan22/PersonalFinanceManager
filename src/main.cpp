@@ -1,5 +1,6 @@
 #include <iostream>
 #include <limits>
+#include <iomanip>
 #include "FinanceManager.h"
 
 // Function to get a valid double (for balances, amounts)
@@ -51,7 +52,8 @@ void displayMenu()
     std::cout << "1. Add Account\n";
     std::cout << "2. Add Transaction\n";
     std::cout << "3. View Account Summary\n";
-    std::cout << "4. Exit\n";
+    std::cout << "4. View Transaction History\n";
+    std::cout << "5. Exit\n";
     std::cout << "Select an option: ";
 }
 
@@ -65,7 +67,7 @@ int main()
     while (true)
     {
         displayMenu();
-        int choice = getValidatedInt("Select an option: ", 1, 4);
+        int choice = getValidatedInt("Select an option: ", 1, 5);
 
         // Input validation
         if (std::cin.fail())
@@ -119,6 +121,49 @@ int main()
             std::cin.get();
         }
         else if (choice == 4)
+        {
+            if (fm.getAccounts().empty())
+            {
+                std::cout << "No accounts exist. Add an account first.\n";
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cout << "Press Enter to return to the main menu...";
+                std::cin.get();
+                continue;
+            }
+
+            fm.listAccounts();
+            int accountIndex = getValidatedInt("Select account number to view transactions: ", 1, fm.getAccounts().size());
+            Account &selectedAccount = fm.getAccounts()[accountIndex - 1];
+
+            std::cout << "\n=== Transactions for " << selectedAccount.getName() << " ===\n";
+            const auto &transactions = selectedAccount.getTransactions();
+
+            if (transactions.empty())
+            {
+                std::cout << "No transactions yet.\n";
+            }
+            else
+            {
+                std::cout << std::left << std::setw(10) << "Amount"
+                          << std::setw(15) << "Category"
+                          << std::setw(25) << "Description"
+                          << "Date\n";
+                std::cout << "---------------------------------------------------------------\n";
+
+                for (const auto &t : transactions)
+                {
+                    std::cout << std::left << std::setw(10) << t.getAmount()
+                              << std::setw(15) << t.getCategory()
+                              << std::setw(25) << t.getDescription()
+                              << t.getDateString() << "\n";
+                }
+            }
+
+            // Pause before returning to menu
+            std::cout << "\nPress Enter to return to the main menu...";
+            std::cin.get();
+        }
+        else if (choice == 5)
         {
             std::cout << "Exiting...\n";
             break;
