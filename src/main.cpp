@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <ctime>
 #include <sstream>
+#include <fstream>
 #include "FinanceManager.h"
 
 // Function to get a valid double (for balances, amounts)
@@ -156,11 +157,12 @@ int main()
                 std::cout << "4. Filter by date range\n";
                 std::cout << "5. Sort by amount\n";
                 std::cout << "6. Sort by date\n";
-                std::cout << "7. Return to main menu\n";
+                std::cout << "7. Save displayed transactions to CSV\n";
+                std::cout << "8. Return to main menu\n";
 
-                int option = getValidatedInt("Choose an option: ", 1, 7);
+                int option = getValidatedInt("Choose an option: ", 1, 8);
 
-                if (option == 7)
+                if (option == 8)
                     break; // back to main menu
 
                 filteredTransactions = selectedAccount.getTransactions(); // reset before each filter/sort
@@ -242,6 +244,41 @@ int main()
                               {
                                   return sortChoice == 1 ? a.getDate() < b.getDate() : a.getDate() > b.getDate();
                               });
+                }
+                else if (option == 7)
+                { // Export to CSV
+                    std::string filename;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Enter file name to save (e.g. transactions.csv): ";
+                    std::getline(std::cin, filename);
+
+                    std::ofstream outFile(filename);
+
+                    if (!outFile)
+                    {
+                        std::cerr << "Error: Could not open file for writing.\n";
+                    }
+                    else
+                    {
+                        // Write CSV header
+                        outFile << "Amount,Category,Description,Date\n";
+
+                        // Write transactions
+                        for (const auto &t : filteredTransactions)
+                        {
+                            outFile << t.getAmount() << ","
+                                    << "\"" << t.getCategory() << "\","
+                                    << "\"" << t.getDescription() << "\","
+                                    << "\"" << t.getDateString() << "\"\n";
+                        }
+
+                        std::cout << "Transactions successfully exported to " << filename << "\n";
+                    }
+
+                    outFile.close();
+
+                    std::cout << "Press Enter to continue...";
+                    std::cin.get();
                 }
 
                 // Display transactions
