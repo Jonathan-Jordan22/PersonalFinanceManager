@@ -2,6 +2,8 @@
 #include <limits>
 #include <iomanip>
 #include <algorithm>
+#include <ctime>
+#include <sstream>
 #include "FinanceManager.h"
 
 // Function to get a valid double (for balances, amounts)
@@ -45,6 +47,14 @@ int getValidatedInt(const std::string &prompt, int min, int max)
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid input. Enter a number between " << min << " and " << max << ".\n";
     }
+}
+
+std::time_t parseDate(const std::string &dateStr)
+{
+    std::tm tm = {};
+    std::istringstream ss(dateStr);
+    ss >> std::get_time(&tm, "%Y-%m-%d"); // expected format "YYYY-MM-DD"
+    return std::mktime(&tm);
 }
 
 void displayMenu()
@@ -142,13 +152,15 @@ int main()
                 std::cout << "\n=== Transaction Options for " << selectedAccount.getName() << " ===\n";
                 std::cout << "1. View all transactions\n";
                 std::cout << "2. Filter by category\n";
-                std::cout << "3. Sort by amount\n";
-                std::cout << "4. Sort by date\n";
-                std::cout << "5. Return to main menu\n";
+                std::cout << "3. Filter by amount range\n";
+                std::cout << "4. Filter by date range\n";
+                std::cout << "5. Sort by amount\n";
+                std::cout << "6. Sort by date\n";
+                std::cout << "7. Return to main menu\n";
 
-                int option = getValidatedInt("Choose an option: ", 1, 5);
+                int option = getValidatedInt("Choose an option: ", 1, 7);
 
-                if (option == 5)
+                if (option == 7)
                     break; // back to main menu
 
                 filteredTransactions = selectedAccount.getTransactions(); // reset before each filter/sort
@@ -169,7 +181,49 @@ int main()
                     }
                     filteredTransactions = categoryFiltered;
                 }
+
                 else if (option == 3)
+                { // Filter by amount range
+                    double minAmount, maxAmount;
+                    std::cout << "Enter minimum amount: ";
+                    std::cin >> minAmount;
+                    std::cout << "Enter maximum amount: ";
+                    std::cin >> maxAmount;
+
+                    std::vector<Transaction> amountFiltered;
+                    for (const auto &t : filteredTransactions)
+                    {
+                        if (t.getAmount() >= minAmount && t.getAmount() <= maxAmount)
+                        {
+                            amountFiltered.push_back(t);
+                        }
+                    }
+                    filteredTransactions = amountFiltered;
+                }
+                else if (option == 4)
+                { // Filter by date range
+                    std::string startDateStr, endDateStr;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Enter start date (YYYY-MM-DD): ";
+                    std::getline(std::cin, startDateStr);
+                    std::cout << "Enter end date (YYYY-MM-DD): ";
+                    std::getline(std::cin, endDateStr);
+
+                    std::time_t startDate = parseDate(startDateStr);
+                    std::time_t endDate = parseDate(endDateStr);
+
+                    std::vector<Transaction> dateFiltered;
+                    for (const auto &t : filteredTransactions)
+                    {
+                        std::time_t txDate = t.getDate(); // assuming getDate() returns std::time_t
+                        if (txDate >= startDate && txDate <= endDate)
+                        {
+                            dateFiltered.push_back(t);
+                        }
+                    }
+                    filteredTransactions = dateFiltered;
+                }
+                else if (option == 5)
                 { // sort by amount
                     std::cout << "Sort by amount: 1. Ascending 2. Descending: ";
                     int sortChoice = getValidatedInt("", 1, 2);
@@ -179,7 +233,7 @@ int main()
                                   return sortChoice == 1 ? a.getAmount() < b.getAmount() : a.getAmount() > b.getAmount();
                               });
                 }
-                else if (option == 4)
+                else if (option == 6)
                 { // sort by date
                     std::cout << "Sort by date: 1. Oldest first 2. Newest first: ";
                     int sortChoice = getValidatedInt("", 1, 2);
